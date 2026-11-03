@@ -190,7 +190,7 @@ def train(args):
     # Test (fairness arm)    = IXI TEST
     # Test (clinical arm)    = OASIS CLINICAL + OASIS TEST
     train_df = df[df["split"] == "TRAIN"].reset_index(drop=True)
-    val_df   = df[df["split"].isin(["VAL", "TEST"]) & (df["dataset"] == "IXI")].reset_index(drop=True)
+    val_df   = df[(df["split"] == "VAL") & (df["dataset"] == "IXI")].reset_index(drop=True)
     # For the test phase — keep IXI and OASIS separate for reporting
     test_ixi_df  = df[(df["split"] == "TEST")     & (df["dataset"] == "IXI")].reset_index(drop=True)
     test_oasis_df= df[(df["split"].isin(["TEST","CLINICAL"])) & (df["dataset"] == "OASIS")].reset_index(drop=True)
@@ -199,16 +199,11 @@ def train(args):
           f"test_IXI={len(test_ixi_df)}  test_OASIS={len(test_oasis_df)}")
 
     # ── 3. Tabular meta ──────────────────────────────────────────────────────
-    all_df = pd.concat([train_df, val_df, test_ixi_df, test_oasis_df], ignore_index=True)
-    all_meta, fit_stats = build_meta_matrix(all_df)
-
-    # slice back to each split
-    n_tr = len(train_df);  n_va = len(val_df)
-    n_ti = len(test_ixi_df); n_to = len(test_oasis_df)
-    tr_meta  = all_meta[:n_tr]
-    va_meta  = all_meta[n_tr: n_tr+n_va]
-    ti_meta  = all_meta[n_tr+n_va: n_tr+n_va+n_ti]
-    to_meta  = all_meta[n_tr+n_va+n_ti:]
+    # Fit scaling statistics exclusively on training partition
+    tr_meta, fit_stats = build_meta_matrix(train_df)
+    va_meta, _ = build_meta_matrix(val_df, fit_stats=fit_stats)
+    ti_meta, _ = build_meta_matrix(test_ixi_df, fit_stats=fit_stats)
+    to_meta, _ = build_meta_matrix(test_oasis_df, fit_stats=fit_stats)
 
     json.dump(
         {"mean": fit_stats["mean"].tolist(), "std": fit_stats["std"].tolist()},

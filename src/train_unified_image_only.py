@@ -111,21 +111,17 @@ def train_image_only(args):
     df = pd.read_csv(UNIFIED_MANIFEST)
 
     train_df = df[df["split"] == "TRAIN"].reset_index(drop=True)
-    val_df   = df[df["split"].isin(["VAL", "TEST"]) & (df["dataset"] == "IXI")].reset_index(drop=True)
+    val_df   = df[(df["split"] == "VAL") & (df["dataset"] == "IXI")].reset_index(drop=True)
     test_ixi_df   = df[(df["split"] == "TEST") & (df["dataset"] == "IXI")].reset_index(drop=True)
     test_oasis_df = df[(df["split"].isin(["TEST", "CLINICAL"])) & (df["dataset"] == "OASIS")].reset_index(drop=True)
 
     print(f"Splits: Train={len(train_df)}, Val={len(val_df)}, Test_IXI={len(test_ixi_df)}, Test_OASIS={len(test_oasis_df)}")
 
-    # Dummy meta matrix (needed only because BrainAgeDataset expects it, but model ignores it)
-    all_df = pd.concat([train_df, val_df, test_ixi_df, test_oasis_df], ignore_index=True)
-    all_meta, _ = build_meta_matrix(all_df)
-    n_tr = len(train_df); n_va = len(val_df)
-    n_ti = len(test_ixi_df); n_to = len(test_oasis_df)
-    tr_meta = all_meta[:n_tr]
-    va_meta = all_meta[n_tr: n_tr+n_va]
-    ti_meta = all_meta[n_tr+n_va: n_tr+n_va+n_ti]
-    to_meta = all_meta[n_tr+n_va+n_ti:]
+    # Dummy meta matrix: fit scaling statistics exclusively on training partition
+    tr_meta, fit_stats = build_meta_matrix(train_df)
+    va_meta, _ = build_meta_matrix(val_df, fit_stats=fit_stats)
+    ti_meta, _ = build_meta_matrix(test_ixi_df, fit_stats=fit_stats)
+    to_meta, _ = build_meta_matrix(test_oasis_df, fit_stats=fit_stats)
 
     train_ds = BrainAgeDataset(train_df, tr_meta)
     val_ds   = BrainAgeDataset(val_df,   va_meta)
