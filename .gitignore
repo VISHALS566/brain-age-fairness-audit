@@ -1,0 +1,25 @@
+# Data directories (large neuroimaging data)
+data/
+*.tar.gz
+*.tar
+*.zip
+*.nii
+*.nii.gz
+*.pkl
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Caches and environments
+.ipynb_checkpoints/
+*.log
+.env
+venv/
+env/
+brainage_env/
+
+# OS specific files
+.DS_Store
+Thumbs.db

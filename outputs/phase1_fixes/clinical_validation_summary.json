@@ -1,0 +1,46 @@
+{
+  "n_oasis_test": 94,
+  "n_mmse_evaluated": 68,
+  "spearman_rho": -0.2232195049866989,
+  "spearman_pvalue": 0.06728726337176189,
+  "pearson_r": -0.27157497810304415,
+  "pearson_pvalue": 0.025076032675618004,
+  "cdr_breakdown": [
+    {
+      "CDR": 0.0,
+      "Clinical Stage": "Healthy Controls",
+      "N": 47,
+      "Mean BAG (y)": -1.29,
+      "Std BAG (y)": 10.07,
+      "Median BAG (y)": -0.12,
+      "Mean Absolute Error (y)": 7.18
+    },
+    {
+      "CDR": 0.5,
+      "Clinical Stage": "Very Mild Dementia",
+      "N": 32,
+      "Mean BAG (y)": 2.88,
+      "Std BAG (y)": 6.4,
+      "Median BAG (y)": 3.64,
+      "Mean Absolute Error (y)": 6.02
+    },
+    {
+      "CDR": 1.0,
+      "Clinical Stage": "Mild Dementia",
+      "N": 13,
+      "Mean BAG (y)": 4.16,
+      "Std BAG (y)": 6.77,
+      "Median BAG (y)": 3.1,
+      "Mean Absolute Error (y)": 5.66
+    },
+    {
+      "CDR": 2.0,
+      "Clinical Stage": "Moderate Dementia",
+      "N": 2,
+      "Mean BAG (y)": -0.88,
+      "Std BAG (y)": 7.32,
+      "Median BAG (y)": -0.88,
+      "Mean Absolute Error (y)": 7.32
+    }
+  ]
+}
