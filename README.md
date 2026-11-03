@@ -77,9 +77,10 @@ Evaluated on the held-out test partition ($N=201$ subjects, 1,000 bootstrap iter
 │   ├── model_v2.py           # 3D ResNet (Image-Only and Metadata-Assisted)
 │   ├── train_unified.py      # Metadata-assisted model training
 │   ├── train_unified_image_only.py # Image-only ablation model training
-│   ├── run_phase1_fixes.py   # Bootstrap CIs, deployable calibration & clinical validation
+│   ├── evaluate_calibration_and_bootstrap.py # Bootstrap CIs & deployable calibration
 │   ├── compare_models.py     # Disparity audit comparing image-only vs metadata
 │   ├── plot_image_vs_metadata.py # Publication figure generation
+│   ├── extract_oasis.py      # OASIS-1 dataset extraction utility
 │   └── evaluate_fairness.py  # Stratified subgroup metrics
 └── outputs/                  # Numerical predictions and publication figures
     ├── comparison/           # Side-by-side CSV audit metrics
@@ -101,10 +102,10 @@ cd brain-age-fairness-audit
 pip install -r requirements.txt
 ```
 
-### 2. Run Subgroup Bootstrap CIs & Deployable Calibration (Phase 1)
+### 2. Run Subgroup Bootstrap CIs & Deployable Calibration
 
 ```bash
-python src/run_phase1_fixes.py
+python src/evaluate_calibration_and_bootstrap.py
 ```
 Outputs saved to `outputs/phase1_fixes/`:
 - `table3_subgroup_fairness_with_bootstrap_ci.csv`
@@ -112,7 +113,7 @@ Outputs saved to `outputs/phase1_fixes/`:
 - `table_clinical_cdr_validation.csv`
 - `clinical_validation_summary.json`
 
-### 3. Evaluate Image-Only vs. Metadata Disparity (Phase 2)
+### 3. Evaluate Image-Only vs. Metadata Disparity
 
 ```bash
 # Compare test predictions across subgroups

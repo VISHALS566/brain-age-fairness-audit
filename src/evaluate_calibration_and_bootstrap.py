@@ -1,7 +1,7 @@
 """
-run_phase1_fixes.py
+evaluate_calibration_and_bootstrap.py
 ───────────────────
-Phase 1 Fixes for Brain-Age Fairness Audit:
+Evaluation of Calibration, Bootstrap Uncertainty, and Clinical Validity:
 1. Zero-Leakage Deployable Age Calibration (Cole/Beheshti Inverse Method & Linear Mapping)
 2. Bootstrap 95% Confidence Intervals for all subgroups (1,000 iterations)
 3. OASIS-1 Clinical Biomarker Analysis (BAG across CDR stages & MMSE correlation)
@@ -25,7 +25,7 @@ OUTPUT_DIR = BASE_DIR / "outputs" / "phase1_fixes"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 print("=" * 80)
-print("PHASE 1: RIGOROUS METHODOLOGICAL FIXES (ZERO-LEAKAGE CALIBRATION & AUDIT)")
+print("EVALUATION: DEPLOYABLE CALIBRATION, BOOTSTRAP CIs, AND CLINICAL VALIDATION")
 print("=" * 80)
 
 # -----------------------------------------------------------------------------

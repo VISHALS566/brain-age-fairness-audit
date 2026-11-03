@@ -20,7 +20,18 @@ venv/
 env/
 brainage_env/
 
+# Internal guides, scratch, and dashboards
+PAPER_REVISION_GUIDE.md
+app_dashboard.py
+templates/
+outputs/report_figures/
+outputs/best_model.pt
+outputs/*.png
+outputs/*.csv
+!outputs/*/*.csv
+!outputs/figures/*.png
+src/run_phase1_fixes.py
+
 # OS specific files
 .DS_Store
 Thumbs.db
-
