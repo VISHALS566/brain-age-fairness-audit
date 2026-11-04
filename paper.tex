@@ -10,10 +10,19 @@
 \graphicspath{{figures/}}
 \emergencystretch=2em
 
+% Float placement parameters to prevent queue backlog
+\renewcommand{\topfraction}{0.85}
+\renewcommand{\bottomfraction}{0.75}
+\renewcommand{\textfraction}{0.15}
+\renewcommand{\floatpagefraction}{0.70}
+\setcounter{topnumber}{3}
+\setcounter{bottomnumber}{2}
+\setcounter{totalnumber}{4}
+
 \begin{document}
 \title{Fairness Audit of Brain-Age Prediction Across Sex, Cohort Strata and Age: Subgroup Calibration Results and a Proposed Reporting Checklist}
 \titlerunning{Fairness Audit of Brain-Age Prediction}
-\author{Vishal S\orcidID{0009-0004-9276-8869} \and Pranav Eashwaran G\orcidID{0009-0007-8805-7281}}
+\author{Vishal S \and Pranav Eashwaran G}
 \authorrunning{V. S and P. Eashwaran G}
 \institute{School of Computer Science and Engineering, Vellore Institute of Technology, Chennai, India\\
 \email{\{vishal.s2024a, pranaveashwaran.g2024\}@vitstudent.ac.in}}
@@ -61,9 +70,9 @@ Stratum C & IXI benchmark & 125 & 87 & 13 & 25 \\
 \end{table}
 
 \subsection{Subject-level partitions}
-All partitions are subject-level and mutually exclusive (verified: no subject identifier appears in more than one partition). IXI contributes 374 training, 53 validation and 107 test subjects. For OASIS-1, 47 healthy subjects (CDR~0) were sampled for testing across six chronological-age quantiles with seed 42. The impaired subjects (CDR 0.5--2) were sorted by age and assigned alternately, giving 47 clinical test subjects. The 94 OASIS-1 test subjects are thus 47 healthy and 47 clinical. By the subject manifest, the OASIS-1 training partition contains 309 subjects: 261 CDR~0 and 48 CDR~0.5--1. (Repository documentation states 262 and 47; we report the manifest values.) The pooled experiment uses 683 training, 53 validation (IXI only, used for checkpoint selection) and 201 test subjects.
+All partitions are subject-level and mutually exclusive (verified: no subject identifier appears in more than one partition). IXI contributes 374 training, 53 validation and 107 test subjects. For OASIS-1, 47 healthy subjects (CDR~0) were sampled for testing across six chronological-age quantiles with seed 42. The impaired subjects (CDR 0.5--2) were sorted by age and assigned alternately, giving 47 clinical test subjects. The 94 OASIS-1 test subjects are thus 47 healthy and 47 clinical. By the subject manifest, the OASIS-1 training partition contains 309 subjects: 261 CDR~0 and 48 CDR~0.5--1. (Repository documentation states 262 and 47; we report the manifest values.) The pooled experiment uses 683 training, 53 validation (IXI only, used for checkpoint selection) and 201 test subjects (Table~\ref{tab:cohort}, Fig.~\ref{fig:cohort}).
 
-\begin{figure}[t]
+\begin{figure}[!t]
 \centering
 \includegraphics[width=0.62\textwidth]{fig1_cohort.png}
 \caption{Partition sizes per cohort stratum ($N=937$: 683 train, 53 validation, 201 test). OASIS-1 test includes 47 healthy and 47 clinical subjects.}
@@ -75,6 +84,13 @@ BrainAgeResNet has a stride-2 3D convolutional stem (16 channels), residual bloc
 
 The \textbf{image-only model} uses the 128-d representation only. The \textbf{metadata-assisted model} additionally receives sex, a dataset flag and a cohort-stratum code (WashU 0.0, A 0.25, B 0.50, C 0.75), normalised with training-only statistics and projected to 16-d before concatenation (144-d). It is therefore \emph{not} a brain-only model, and the cohort stratum is both a model input and an audit variable.
 
+\begin{figure}[!t]
+\centering
+\includegraphics[width=0.58\textwidth]{fig2_training.png}
+\caption{Training loss and validation MAE of the metadata-assisted model (best checkpoint at epoch 30, validation MAE 8.02~y, $N=53$).}
+\label{fig:train}
+\end{figure}
+
 \subsection{Calibration and GPR post-processing}
 \textbf{Deployable inverse calibration.} We regress the trained CNN's predictions on true age over the 683 training subjects, $\hat{y}=\alpha y+\beta$, giving $\alpha=0.9330$ and $\beta=3.8952$. At inference, $\hat{y}_{\text{deployable}}=(\hat{y}-3.8952)/0.9330$, which needs no chronological age and uses no test labels. \emph{Qualification:} these training predictions come from the CNN trained on the same 683 subjects, so they are in-sample rather than genuine out-of-fold predictions; no separately trained CNN folds were used. The in-sample fit may understate the shrinkage seen on unseen data.
 
@@ -84,7 +100,14 @@ The \textbf{image-only model} uses the 128-d representation only. The \textbf{me
 
 \section{Results}
 \subsection{Overall performance and subgroup audit}
-On the held-out test cohort ($N=201$) the image-only model had MAE 7.579~y (95\% CI [6.82, 8.42], $R^2=0.787$, mean BAG $+0.491$~y) and the metadata-assisted model 6.938~y ([6.18, 7.77], $R^2=0.813$, $+0.441$~y). Table~\ref{tab:fair} gives subgroup results. The male-minus-female MAE gap was $+0.463$~y (image-only) and $+0.920$~y (metadata); the Stratum~A-minus-Stratum~B gap was $+0.594$~y and $+2.478$~y. These gaps are descriptive: the bootstrap intervals overlap, each model was trained once, and sex, age, dataset and stratum are not independently modelled. The results do not show that either model is fair or unbiased.
+On the held-out test cohort ($N=201$) the image-only model had MAE 7.579~y (95\% CI [6.82, 8.42], $R^2=0.787$, mean BAG $+0.491$~y) and the metadata-assisted model 6.938~y ([6.18, 7.77], $R^2=0.813$, $+0.441$~y; Fig.~\ref{fig:scatter}; training history in Fig.~\ref{fig:train}). Table~\ref{tab:fair} and Fig.~\ref{fig:sub} give subgroup results. The male-minus-female MAE gap was $+0.463$~y (image-only) and $+0.920$~y (metadata); the Stratum~A-minus-Stratum~B gap was $+0.594$~y and $+2.478$~y. These gaps are descriptive: the bootstrap intervals overlap, each model was trained once, and sex, age, dataset and stratum are not independently modelled. The results do not show that either model is fair or unbiased.
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=0.52\textwidth]{fig3_scatter.png}
+\caption{Predicted versus chronological age on the test cohort ($N=201$, metadata-assisted model).}
+\label{fig:scatter}
+\end{figure}
 
 \begin{table}[t]
 \centering
@@ -111,36 +134,15 @@ Dataset & IXI & 107 & 7.511 [6.36, 8.70] & 7.254 [6.18, 8.32] & $-$0.257 \\
 \end{tabularx}
 \end{table}
 
-\begin{figure}[t]
+\begin{figure}[!t]
 \centering
-\includegraphics[width=0.66\textwidth]{fig4_subgroups.png}
+\includegraphics[width=0.62\textwidth]{fig4_subgroups.png}
 \caption{Subgroup MAE for the image-only and metadata-assisted models (test cohort, $N=201$; values as in Table~\ref{tab:fair}).}
 \label{fig:sub}
 \end{figure}
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.66\textwidth]{fig5_decades.png}
-\caption{Mean BAG by chronological-age decade (metadata-assisted model), showing regression toward the mean. Decades with $n<10$ (grey) are unreliable.}
-\label{fig:dec}
-\end{figure}
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.62\textwidth]{fig2_training.png}
-\caption{Training loss and validation MAE of the metadata-assisted model (best checkpoint at epoch 30, validation MAE 8.02~y, $N=53$).}
-\label{fig:train}
-\end{figure}
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.55\textwidth]{fig3_scatter.png}
-\caption{Predicted versus chronological age on the test cohort ($N=201$, metadata-assisted model).}
-\label{fig:scatter}
-\end{figure}
-
 \subsection{Model comparison and calibration}
-Table~\ref{tab:models} compares stages. Row~1 is an early development baseline evaluated on IXI test scans only ($N=107$); rows 2--7 use the pooled test cohort ($N=201$) and are not directly comparable to row~1. The deployable inverse calibration (MAE 7.218~y) did not improve MAE over the uncalibrated metadata model (6.938~y) but reduced mean bias from $+0.441$ to $+0.229$~y. The retrospective adjustment (6.756~y) uses true age and is a diagnostic only. The blend (6.961~y) was close to the CNN alone.
+Table~\ref{tab:models} compares stages. Row~1 is an early development baseline evaluated on IXI test scans only ($N=107$); rows 2--7 use the pooled test cohort ($N=201$) and are not directly comparable to row~1. The deployable inverse calibration (MAE 7.218~y) did not improve MAE over the uncalibrated metadata model (6.938~y) but reduced mean bias from $+0.441$ to $+0.229$~y. The retrospective adjustment (6.756~y) uses true age and is a diagnostic only. The blend (6.961~y) was close to the CNN alone. Across chronological-age decades, uncalibrated predictions showed expected regression toward the mean (Fig.~\ref{fig:dec}).
 
 \begin{table}[t]
 \centering
@@ -162,6 +164,13 @@ Table~\ref{tab:models} compares stages. Row~1 is an early development baseline e
 \end{tabularx}
 \end{table}
 
+\begin{figure}[!t]
+\centering
+\includegraphics[width=0.60\textwidth]{fig5_decades.png}
+\caption{Mean BAG by chronological-age decade (metadata-assisted model), showing regression toward the mean. Decades with $n<10$ (grey) are unreliable.}
+\label{fig:dec}
+\end{figure}
+
 \subsection{Exploratory clinical association (OASIS-1)}
 Among the 94 held-out OASIS-1 subjects, mean BAG rose from $-1.29$~y (CDR~0) to $+2.88$~y (CDR~0.5) and $+4.16$~y (CDR~1) (Table~\ref{tab:clin}, Fig.~\ref{fig:clin}). Recomputed from subject-level predictions, healthy controls differed from impaired subjects (Mann--Whitney $U=790$, $p=0.018$), and BAG correlated with MMSE ($r=-0.272$, $p=0.025$, $n=68$). A Kruskal--Wallis test across CDR 0, 0.5 and 1 gave $H=5.97$, $p=0.051$, which is not significant at 0.05; an earlier draft's value ($H=7.82$, $p=0.020$) could not be reproduced and is not used. The CDR~2 group ($N=2$) is too small to interpret. The analysis is exploratory and unadjusted for chronological age; mean age differs strongly by group (CDR~0: 44.8~y, CDR~0.5: 76.4~y, CDR~1: 76.7~y), because healthy test subjects were age-stratified across adulthood.
 
@@ -181,7 +190,7 @@ Among the 94 held-out OASIS-1 subjects, mean BAG rose from $-1.29$~y (CDR~0) to 
 \end{tabularx}
 \end{table}
 
-\begin{figure}[t]
+\begin{figure}[!t]
 \centering
 \includegraphics[width=0.48\textwidth]{fig6a_cdr.png}\hfill
 \includegraphics[width=0.48\textwidth]{fig6b_mmse.png}
@@ -225,6 +234,7 @@ This preliminary descriptive audit found that metadata input lowered overall MAE
 
 \subsubsection*{Code availability.} \url{https://github.com/VISHALS566/brain-age-fairness-audit} (revision \texttt{fdbe54e}).
 
+\clearpage
 \begin{thebibliography}{10}
 \bibitem{beheshti2019bias} Beheshti, I., Nugent, S., Potvin, O., Duchesne, S.: Bias-adjustment in neuroimaging-based brain age frameworks: A robust scheme. NeuroImage: Clinical 24, 102063 (2019)
 \bibitem{chen2022transmorph} Chen, J., Frey, E.C., He, Y., Segars, W.P., Li, Y., Du, Y.: TransMorph: Transformer for unsupervised medical image registration. Med. Image Anal. 82, 102615 (2022)
