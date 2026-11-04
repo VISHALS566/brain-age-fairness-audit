@@ -36,3 +36,4 @@ src/run_phase1_fixes.py
 .DS_Store
 Thumbs.db
 scratch/
+!data/IXI/ixi_subject_crosswalk.csv

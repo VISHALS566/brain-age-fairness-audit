@@ -110,10 +110,17 @@ def build_ixi_manifest(ixi_data_dir: str, ixi_xls: str) -> pd.DataFrame:
     # prior starter code and metadata feature encoding.
     def _site(sid: int) -> str:
         if sid <= 314:
-            return "Hammersmith"
+            return "Stratum A"
         if sid <= 428:
-            return "Guys"
-        return "KCL"
+            return "Stratum B"
+        return "Stratum C"
+
+    def _historical_alias(sid: int) -> str:
+        if sid <= 314:
+            return "Hammersmith (Philips 3T)"
+        if sid <= 428:
+            return "Guys (Philips 1.5T)"
+        return "KCL/IoP (GE 1.5T)"
 
     # ── Walk all splits ──────────────────────────────────────────────────────
     rows = []
@@ -142,6 +149,7 @@ def build_ixi_manifest(ixi_data_dir: str, ixi_xls: str) -> pd.DataFrame:
                 "age":         float(age),
                 "sex":         sex,
                 "site":        _site(sid),
+                "historical_site_alias": _historical_alias(sid),
                 "dataset":     "IXI",
                 "ethnicity_id": float(eth_id) if not pd.isna(eth_id) else np.nan,
                 "cdr":         np.nan,
@@ -194,41 +202,60 @@ def make_oasis_splits(df: pd.DataFrame, test_frac: float = 0.15, seed: int = 42)
 
 def build_oasis_manifest(manifest_csv: str) -> pd.DataFrame:
     """
-    Read the OASIS-1 manifest already produced by oasis_brain_age_v2 and
-    re-map columns to the unified schema. If SPLIT column is missing,
-    automatically generates the verified subject split via make_oasis_splits().
+    Read the OASIS-1 manifest and re-map columns to the unified schema.
+    Consistently normalises splits and enforces strict partition count assertions.
     """
     raw = pd.read_csv(manifest_csv)
-    if "SPLIT" not in raw.columns and "split" not in raw.columns:
+    has_split = ("SPLIT" in raw.columns) or ("split" in raw.columns)
+    if not has_split:
         raw = make_oasis_splits(raw)
-        if "split" in raw.columns:
-            raw["SPLIT"] = raw["split"]
 
-    # Map SPLIT values: CV→TRAIN, Test→TEST, Clinical_Test→CLINICAL
-    split_map = {"CV": "TRAIN", "Test": "TEST", "Clinical_Test": "CLINICAL",
-                 "Excluded": "EXCLUDED"}
+    split_map = {
+        "CV": "TRAIN", "TRAIN": "TRAIN", "train": "TRAIN",
+        "Test": "TEST", "TEST": "TEST", "test": "TEST",
+        "Clinical_Test": "CLINICAL", "CLINICAL": "CLINICAL", "clinical": "CLINICAL",
+        "Excluded": "EXCLUDED", "EXCLUDED": "EXCLUDED", "excluded": "EXCLUDED",
+    }
 
     rows = []
     for _, r in raw.iterrows():
-        sp = split_map.get(r["SPLIT"], "EXCLUDED")
+        raw_sp = r.get("SPLIT", r.get("split", "EXCLUDED"))
+        sp = split_map.get(str(raw_sp).strip(), "EXCLUDED")
         if sp == "EXCLUDED":
             continue
+        sid = r.get("SUBJECT_ID", r.get("subject_id"))
+        fpath = r.get("FILE_PATH", r.get("file"))
+        age = r.get("AGE", r.get("age"))
+        sex = r.get("SEX", r.get("sex"))
+        cdr = r.get("CDR", r.get("cdr", np.nan))
+        mmse = r.get("MMSE", r.get("mmse", np.nan))
         rows.append({
-            "subject_id":   r["SUBJECT_ID"],
-            "file":         r["FILE_PATH"],
+            "subject_id":   str(sid),
+            "file":         str(fpath),
             "file_type":    "hdr",
-            "age":          float(r["AGE"]),
-            "sex":          r["SEX"],
-            "site":         "WashU",
+            "age":          float(age),
+            "sex":          str(sex),
+            "site":         "Stratum WashU",
+            "historical_site_alias": "WashU (Siemens 1.5T)",
             "dataset":      "OASIS",
             "ethnicity_id": np.nan,
-            "cdr":          float(r["CDR"]) if not pd.isna(r.get("CDR")) else np.nan,
-            "mmse":         float(r["MMSE"]) if not pd.isna(r.get("MMSE")) else np.nan,
+            "cdr":          float(cdr) if not pd.isna(cdr) else np.nan,
+            "mmse":         float(mmse) if not pd.isna(mmse) else np.nan,
             "split":        sp,
         })
 
     df = pd.DataFrame(rows)
-    print(f"[OASIS] {len(df)} subjects  |  splits: {df.split.value_counts().to_dict()}")
+
+    # Strict count assertions to prevent silent partitioning failures
+    n_tr = (df["split"] == "TRAIN").sum()
+    n_te = (df["split"] == "TEST").sum()
+    n_cl = (df["split"] == "CLINICAL").sum()
+    assert len(df) == 403, f"Expected 403 usable OASIS subjects, got {len(df)}"
+    assert n_tr == 309, f"Expected 309 OASIS TRAIN subjects, got {n_tr}"
+    assert n_te == 47, f"Expected 47 OASIS healthy TEST subjects, got {n_te}"
+    assert n_cl == 47, f"Expected 47 OASIS impaired CLINICAL subjects, got {n_cl}"
+
+    print(f"[OASIS] {len(df)} subjects verified (train={n_tr}, test={n_te}, clinical={n_cl})")
     return df
 
 
@@ -248,7 +275,7 @@ def build_unified_manifest(
     if save_path:
         Path(save_path).parent.mkdir(parents=True, exist_ok=True)
         df.to_csv(save_path, index=False)
-        print(f"✅ Unified manifest saved → {save_path}")
+        print(f"[Unified manifest saved] -> {save_path}")
     print(f"\n{'='*55}")
     print(f"UNIFIED MANIFEST  |  total={len(df)}")
     print(df.groupby(["dataset", "split"]).size().to_string())
