@@ -1,4 +1,4 @@
-Model / Method,Type,N,MAE (years),RMSE (years),R2 Score,Mean Bias (years),Within ±5y (%),Within ±10y (%)
+Model / Method,Type,N,MAE (years),RMSE (years),R2 Score,Mean Bias (years),Within +/-5y (%),Within +/-10y (%)
 Raw 3D ResNet CNN,Primary model (Deployable),201,6.938342875621891,9.0123690599083,0.8125335830280206,0.4411029353233824,47.76119402985074,75.12437810945273
-Deployable Inverse Calibrated,"Cole/Beheshti formula: (y_hat - beta)/alpha (Deployable, zero leakage)",201,7.212354516620775,9.355136719494372,0.7980025808701274,0.4396691260926937,44.27860696517413,73.6318407960199
-Evaluation-Stage Residual Adjusted,Retrospective BAG residual adjustment: BAG - (a*y + b) (Evaluation only),201,6.731971316628538,8.732032225210418,0.8240147771166755,0.41038470014781214,48.258706467661696,78.1094527363184
+Deployable Inverse Calibrated,"Cole/Beheshti formula: (y_hat - beta)/alpha (Deployable, zero leakage)",201,7.21807366258597,9.350545647219606,0.7982007943691662,0.22901803847498112,44.776119402985074,73.6318407960199
+Evaluation-Stage Residual Adjusted,Retrospective BAG residual adjustment: BAG - (a*y + b) (Evaluation only),201,6.756298897964312,8.653836003524868,0.8271525947252037,-9.898107761832242e-16,45.27363184079602,78.1094527363184

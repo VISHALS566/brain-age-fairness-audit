@@ -165,11 +165,11 @@ def build_ixi_manifest(ixi_data_dir: str, ixi_xls: str) -> pd.DataFrame:
 def make_oasis_splits(df: pd.DataFrame, test_frac: float = 0.15, seed: int = 42) -> pd.DataFrame:
     """
     Subject-level split for OASIS-1:
-      - Healthy controls (CDR 0, N=309): stratified across 6 age quantiles; 15% (N=47)
-        sampled using random_state=42 as held-out test subjects (remaining 262 join training pool).
-      - Cognitively impaired subjects (CDR 0.5-2, N=94): sorted by age,
-        half (N=47) allocated to training pool and half (N=47) held out as clinical test.
-      - Total held-out subjects: N=94 (47 healthy test + 47 clinical test); training: N=309.
+      - Healthy controls (CDR 0, N=308): stratified across 6 age quantiles; 15% (N=47)
+        sampled using random_state=42 as held-out test subjects (remaining 261 join training pool).
+      - Cognitively impaired subjects (CDR 0.5-2, N=95): sorted by age,
+        48 allocated to training pool and 47 held out as clinical test.
+      - Total held-out subjects: N=94 (47 healthy test + 47 clinical test); training: N=309 (261 CDR 0 + 48 CDR >= 0.5).
     """
     df = df.copy()
     cdr_col = "cdr" if "cdr" in df.columns else ("CDR" if "CDR" in df.columns else None)

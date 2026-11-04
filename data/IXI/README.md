@@ -37,3 +37,4 @@ Scans in the preprocessed benchmark are identified by sequential anonymized file
 - `split`: Canonical partition assignment (`TRAIN`, `VAL`, `TEST`, `UNASSIGNED`).
 - `historical_reference_alias`: Historical collection centre alias for provenance.
 - `provenance_notes`: Processing details and pipeline origin.
+
