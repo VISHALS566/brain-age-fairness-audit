@@ -145,6 +145,36 @@ def build_ixi_manifest(ixi_data_dir: str, ixi_xls: str) -> pd.DataFrame:
     return df
 
 
+def make_oasis_splits(df: pd.DataFrame, test_frac: float = 0.15, seed: int = 42) -> pd.DataFrame:
+    """
+    Subject-level split for OASIS-1:
+      - Healthy controls (CDR 0): stratified across 4 age quantiles; 15% (N=47)
+        sampled using random_state=42 as held-out test subjects.
+      - Cognitively impaired subjects (CDR 0.5-2, N=94): sorted by age,
+        half (N=47) allocated to training and half (N=47) held out as clinical test.
+    """
+    df = df.copy()
+    healthy = df[df.get("cdr", 0.0) == 0.0]
+    impaired = df[df.get("cdr", 0.0) > 0.0]
+
+    hb = pd.qcut(healthy["age"], q=4, labels=False, duplicates="drop")
+    test_ids = []
+    for b in hb.unique():
+        group = healthy[hb == b]
+        n = int(round(test_frac * len(group)))
+        test_ids += group.sample(n, random_state=seed)["subject_id"].tolist()
+
+    df["split"] = "TRAIN"
+    df.loc[df["subject_id"].isin(test_ids), "split"] = "TEST"
+
+    if len(impaired):
+        sorted_impaired = impaired.sort_values("age")["subject_id"].tolist()
+        clinical_test_ids = sorted_impaired[1::2]
+        df.loc[df["subject_id"].isin(clinical_test_ids), "split"] = "CLINICAL"
+
+    return df
+
+
 def build_oasis_manifest(manifest_csv: str) -> pd.DataFrame:
     """
     Read the OASIS-1 manifest already produced by oasis_brain_age_v2 and
