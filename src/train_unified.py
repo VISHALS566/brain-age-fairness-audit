@@ -73,15 +73,17 @@ from model_v2 import (
 # Paths  (edit if your data lives elsewhere)
 # ═══════════════════════════════════════════════════════════════════════════════
 BASE_DIR          = Path(__file__).resolve().parent.parent   # D:\brainage
-IXI_DATA_DIR      = BASE_DIR / "data" / "IXI" / "IXI_data"
-IXI_XLS           = BASE_DIR / "data" / "IXI" / "IXI.xls"
-OASIS_MANIFEST    = Path("data/OASIS-1/manifest.csv")
-if not OASIS_MANIFEST.exists() and (OUT_DIR / "unified_manifest.csv").exists():
-    OASIS_MANIFEST = OUT_DIR / "unified_manifest.csv"
 OUT_DIR           = BASE_DIR / "outputs" / "unified"
+OUT_DIR.mkdir(parents=True, exist_ok=True)
 UNIFIED_MANIFEST  = OUT_DIR / "unified_manifest.csv"
 
-OUT_DIR.mkdir(parents=True, exist_ok=True)
+IXI_DATA_DIR      = BASE_DIR / "data" / "IXI" / "IXI_data"
+IXI_XLS           = BASE_DIR / "data" / "IXI" / "IXI.xls"
+OASIS_MANIFEST    = BASE_DIR / "data" / "OASIS-1" / "manifest.csv"
+if not OASIS_MANIFEST.exists():
+    alt_manifest = Path("E:/code/outputs/brain_age_v2/manifest.csv")
+    if alt_manifest.exists():
+        OASIS_MANIFEST = alt_manifest
 
 SEED = 42
 

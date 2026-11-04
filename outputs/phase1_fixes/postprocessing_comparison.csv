@@ -1,0 +1,6 @@
+Model / Pipeline Stage,MAE,R2,Bias (y),+/- 5 y (%),+/- 10 y (%)
+Primary 3D ResNet (CNN),6.914,0.813,+0.471,50.2,74.6
+Standalone GPR (50 PCA dims),7.752,0.78,+0.211,40.3,71.1
+CNN+GPR Blend (0.79/0.21),6.947,0.814,+0.416,48.8,73.6
+Deployable Inverse Calibration,7.158,0.801,+0.262,45.8,73.1
+"Residual Adjustment (Retrospective, needs age)",6.695,0.831,-0.000,43.8,79.1

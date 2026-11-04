@@ -35,3 +35,4 @@ src/run_phase1_fixes.py
 # OS specific files
 .DS_Store
 Thumbs.db
+scratch/
