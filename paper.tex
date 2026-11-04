@@ -26,7 +26,7 @@
 \maketitle
 
 \begin{abstract}
-The brain-age gap ($\text{BAG} = \hat{y} - y$), defined as the difference between MRI-predicted age and chronological age, is an established biomarker for neurodegeneration. However, subgroup fairness and error calibration across demographic and multi-centre cohort partitions are rarely reported. We present a descriptive subgroup audit of 3D residual brain-age networks trained on 937 T1-weighted MRI scans pooled from OASIS-1 ($N=403$) and the preprocessed IXI benchmark ($N=534$). We compare an image-only 3D ResNet against a metadata-assisted architecture that additionally ingests sex, dataset, and cohort stratum indicators on a strictly held-out test cohort ($N = 201$). Metadata ingestion reduces overall mean absolute error (MAE) from 7.579~y (95\% CI [6.82, 8.42]) to 6.914~y (95\% CI [6.13, 7.75]), but was associated with larger observed subgroup gaps in this run: the male-minus-female MAE gap widened from +0.463~y to +0.920~y, and the Stratum~A minus Stratum~B gap widened from +0.594~y to +2.478~y (historical aliases Hammersmith vs. Guy's). A deployable inverse calibration ($(\hat{y} - \beta)/\alpha$) operating strictly without test-time chronological age achieves MAE = 7.158~y ($\pm 10$~y accuracy: 73.1\%), evaluated separately from retrospective residual adjustment (MAE = 6.695~y). On held-out OASIS-1 subjects, mean BAG increases with dementia severity (CDR 0: $-1.29$~y; CDR 0.5: $+2.88$~y; CDR 1: $+4.16$~y) and correlates inversely with cognitive score (MMSE $r = -0.272, p = 0.025$). Based on these findings, we formulate a 10-point reporting checklist for subgroup transparency in machine learning for e-health neuroimaging.
+The brain-age gap ($\text{BAG} = \hat{y} - y$), defined as the difference between MRI-predicted age and chronological age, is an established biomarker for neurodegeneration. However, subgroup fairness and error calibration across demographic and multi-centre cohort partitions are rarely reported. We present a descriptive subgroup audit of 3D residual brain-age networks trained on 937 T1-weighted MRI scans pooled from OASIS-1 ($N=403$) and the preprocessed IXI benchmark ($N=534$). We compare an image-only 3D ResNet against a metadata-assisted architecture that additionally ingests sex, dataset, and cohort stratum indicators on a strictly held-out test cohort ($N = 201$). Metadata ingestion reduces overall mean absolute error (MAE) from 7.579~y (95\% CI [6.82, 8.42]) to 6.938~y (95\% CI [6.18, 7.77]), but was associated with larger observed subgroup gaps in this run: the male-minus-female MAE gap widened from +0.463~y to +0.920~y, and the Stratum~A minus Stratum~B gap widened from +0.594~y to +2.478~y. A deployable inverse calibration ($(\hat{y} - \beta)/\alpha$) operating strictly without test-time chronological age achieves MAE = 7.218~y ($\pm 10$~y accuracy: 73.6\%), evaluated separately from retrospective residual adjustment (MAE = 6.756~y). On held-out OASIS-1 subjects, mean BAG increases with dementia severity (CDR 0: $-1.29$~y; CDR 0.5: $+2.88$~y; CDR 1: $+4.16$~y) and correlates inversely with cognitive score (MMSE $r = -0.272, p = 0.025$). Based on these findings, we formulate a 10-point reporting checklist for subgroup transparency in machine learning for e-health neuroimaging.
 
 \keywords{Brain age \and Brain-age gap \and Subgroup fairness \and Metadata ablation \and Cohort strata \and Reporting checklist.}
 \end{abstract}
@@ -37,7 +37,7 @@ Machine learning models trained on structural brain MRI scans can non-invasively
 Despite widespread research interest, deep brain-age models face two major calibration hurdles:
 \begin{enumerate}
     \item \textbf{Regression to the Mean:} Uncorrected predictions consistently overestimate the age of younger subjects and underestimate older subjects due to bounded target loss minimization and Gaussian noise~\cite{de2020bias}.
-    \item \textbf{Subgroup Disparity \& Covariate Confounding:} Differences in biological sex, acquisition site, hardware vendor, and magnetic field strength frequently introduce systemic shifts. In multi-centre studies, site and demographic variables are frequently nested, making scanner physics and demographic effects hard to disentangle~\cite{bell2021fairness}.
+    \item \textbf{Subgroup Disparity \& Covariate Confounding:} Differences in biological sex, acquisition site, hardware vendor, and magnetic field strength frequently introduce systemic shifts. In multi-centre studies, site and demographic variables are frequently nested, making scanner physics and demographic effects hard to disentangle~\cite{fortin2018harmonization}.
 \end{enumerate}
 
 In this paper, we conduct an empirical fairness and calibration audit. Our core contributions are:
@@ -53,33 +53,33 @@ In this paper, we conduct an empirical fairness and calibration audit. Our core 
 
 \textbf{Bias Correction.} Cole et al.~\cite{cole2018brain} and de Lange and Cole~\cite{de2020bias} highlighted that retrospective adjustment ($\text{BAG} - (a y + b)$) requires ground-truth age $y$, precluding prospective deployment. Beheshti et al.~\cite{beheshti2019bias} investigated linear calibration, but empirical reporting frequently blurs deployable calibration with post-hoc evaluation-only diagnostic adjustments.
 
-\textbf{Algorithmic Fairness in Medical Imaging.} Disparities in model performance across demographic subgroups have been documented in chest radiography and dermatology~\cite{seyyed2020underdiagnosis}. In neuroimaging, hardware protocol discrepancies compound demographic differences, necessitating rigorous stratified audits~\cite{bell2021fairness}.
+\textbf{Algorithmic Fairness in Medical Imaging.} Disparities in model performance across demographic subgroups have been documented in chest radiography and dermatology~\cite{seyyed2020underdiagnosis}. In neuroimaging, protocol discrepancies compound demographic differences, necessitating rigorous stratified audits~\cite{mehrabi2021survey}.
 
 \section{Data and Methods}
 
 \subsection{Datasets, Cohort Strata, and Split Isolation}
 We pool two established open-access T1-weighted MRI collections ($N = 937$ usable scans):
 \begin{enumerate}
-    \item \textbf{OASIS-1:} Cross-sectional scans from Washington University (Siemens Vision 1.5~T) comprising 403 usable subjects (309 cognitively healthy, CDR = 0; 94 with mild-to-moderate dementia, CDR 0.5--2.0; ages 18--96~y)~\cite{marcus2007open}.
-    \item \textbf{IXI Benchmark:} 534 usable scans from the preprocessed IXI benchmark cohort (Junyu Chen et al., 2021), processed via FreeSurfer skull stripping and affine alignment~\cite{ixi_dataset}.
+    \item \textbf{OASIS-1:} Cross-sectional scans from Washington University comprising 403 usable subjects (309 cognitively healthy, CDR = 0; 94 with mild-to-moderate dementia, CDR 0.5--2.0; ages 18--96~y)~\cite{marcus2007open}.
+    \item \textbf{IXI Benchmark:} 534 usable scans from the preprocessed IXI benchmark cohort (Junyu Chen et al., 2022)~\cite{chen2021transmorph}, processed via FreeSurfer skull stripping and affine alignment~\cite{ixi_dataset}.
 \end{enumerate}
 
-\textbf{Provenance of Cohort Partition Strata.} Scans in the public preprocessed IXI benchmark are distributed as sequential anonymized volumes (\texttt{subject\_0.pkl} to \texttt{subject\_578.pkl}) where raw DICOM headers are stripped. Historical literature informally grouped subject ID cutoffs ($\le 314$, 315--428, $\ge 429$) by London centres (Hammersmith, Guy's, KCL). We provide a complete subject-level mapping crosswalk (\texttt{data/IXI/ixi\_subject\_crosswalk.csv}) and treat these groups as preprocessed cohort partition strata (Stratum~A [$N=301$], Stratum~B [$N=108$], Stratum~C [$N=125$]) and Stratum WashU ($N=403$) rather than isolated physical scanner hardware.
+\textbf{Provenance of Cohort Partition Strata.} Scans in the public preprocessed IXI benchmark are distributed as sequential anonymized volumes (\texttt{subject\_0.pkl} to \texttt{subject\_578.pkl}) where raw DICOM headers are stripped. From the 576 raw benchmark volumes, 18 were excluded due to missing chronological age or ambiguous demographic metadata, leaving 558 matched records. Of these, 534 met volume quality criteria and were assigned to canonical experimental splits (374 train, 53 val, 107 test). Historical literature informally grouped subject ID cutoffs ($\le 314$, 315--428, $\ge 429$) by London collection centres. We provide a complete subject-level mapping crosswalk (\texttt{data/IXI/ixi\_subject\_crosswalk.csv}) and treat these groups as preprocessed cohort partition strata (Stratum~A [$N=301$], Stratum~B [$N=108$], Stratum~C [$N=125$]) alongside Stratum WashU ($N=403$) rather than isolated physical scanner hardware.
 
 \begin{table}[t]
 \centering
-\caption{Cohort strata overview ($N=937$ usable scans across four acquisition partitions).}
+\caption{Cohort strata overview ($N=937$ usable scans across four partition strata).}
 \label{tab:sites}
-\begin{tabularx}{\textwidth}{l l l c c c c}
+\begin{tabularx}{\textwidth}{l l c c c c}
 \toprule
-\textbf{Cohort Stratum} & \textbf{Historical Alias} & \textbf{Scanner / Field} & \textbf{Release $N$} & \textbf{Usable $N$} & \textbf{Val $N$} & \textbf{Test $N$} \\
+\textbf{Cohort Stratum} & \textbf{Dataset Source} & \textbf{Usable $N$} & \textbf{Train $N$} & \textbf{Val $N$} & \textbf{Test $N$} \\
 \midrule
-Stratum WashU & WashU & Siemens 1.5~T & 416 & 403 & 0 & 94 \\
-Stratum A & Hammersmith & Philips 3.0~T & 314 & 301 & 30 & 50 \\
-Stratum B & Guy's & Philips 1.5~T & 119 & 108 & 11 & 32 \\
-Stratum C & KCL/IoP & GE 1.5~T & 145 & 125 & 12 & 25 \\
+Stratum WashU & OASIS-1 & 403 & 309 & 0 & 94 \\
+Stratum A & IXI Benchmark & 301 & 218 & 30 & 50 \\
+Stratum B & IXI Benchmark & 108 & 69 & 11 & 32 \\
+Stratum C & IXI Benchmark & 125 & 87 & 12 & 25 \\
 \midrule
-\textbf{Total} & & & \textbf{994} & \textbf{937} & \textbf{53} & \textbf{201} \\
+\textbf{Total} & \textbf{Pooled Cohort} & \textbf{937} & \textbf{683} & \textbf{53} & \textbf{201} \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -105,11 +105,11 @@ where $c_k$ is the centre of bin $k$, and $p_k = \text{softmax}(\mathbf{l})_k$. 
 \subsection{Post-Processing and Age Calibration}
 To decouple inference calibration from test-age leakage, we compare:
 \begin{enumerate}
-    \item \textbf{Deployable Inverse Calibration:} Linear regression of training out-of-fold predictions against true age yields calibration parameters $\hat{y} = \alpha y + \beta$ ($\alpha = 0.9330, \beta = 3.8961$). At test time, calibrated age is computed as:
+    \item \textbf{Deployable Inverse Calibration:} Linear regression of training predictions against true age yields calibration parameters $\hat{y} = \alpha y + \beta$ ($\alpha = 0.9330, \beta = 3.8952$). At test time, deployable calibrated age is computed without ground-truth age as:
     \begin{equation}
     \hat{y}_{\text{deployable}} = \frac{\hat{y} - \beta}{\alpha}.
     \end{equation}
-    \item \textbf{Prespecified CNN+GPR Blend:} We fit a Gaussian Process Regressor (GPR with RBF and White noise kernel) on 50 PCA components extracted from the 128-d latent features. The predictions are combined via a prespecified heuristic blend:
+    \item \textbf{Prespecified CNN+GPR Blend:} We fit a Gaussian Process Regressor (GPR with RBF and White noise kernel) on 50 PCA components extracted from the 128-d latent features, yielding both point estimates and predictive standard deviation bounds (test mean $\sigma = 6.37$~y, range $[5.97, 8.26]$~y). The predictions are combined via a prespecified heuristic blend:
     \begin{equation}
     \hat{y}_{\text{blend}} = 0.79 \cdot \hat{y}_{\text{CNN}} + 0.21 \cdot \hat{y}_{\text{GPR}}.
     \end{equation}
@@ -126,7 +126,7 @@ To decouple inference calibration from test-age leakage, we compare:
 \section{Experimental Results}
 
 \subsection{Overall Performance and Metadata Ablation}
-On the held-out test cohort ($N=201$), the image-only model achieves MAE = 7.579~y (95\% CI [6.82, 8.42], $R^2 = 0.781$, Mean BAG = $+0.491$~y). Providing tabular metadata reduces global MAE to 6.914~y (95\% CI [6.13, 7.75], $R^2 = 0.813$, Mean BAG = $+0.471$~y), an overall error reduction of 0.665~y.
+On the held-out test cohort ($N=201$), the image-only model achieves MAE = 7.579~y (95\% CI [6.82, 8.42], $R^2 = 0.781$, Mean BAG = $+0.491$~y). Providing tabular metadata reduces global MAE to 6.938~y (95\% CI [6.18, 7.77], $R^2 = 0.813$, Mean BAG = $+0.441$~y), an overall error reduction of 0.641~y.
 
 \begin{figure}[t]
 \centering
@@ -153,15 +153,15 @@ Because the 95\% bootstrap confidence intervals overlap, these observations repr
 \toprule
 \textbf{Attribute} & \textbf{Subgroup} & \textbf{$N$} & \textbf{Image-Only [95\% CI]} & \textbf{Metadata [95\% CI]} & \textbf{$\Delta$ MAE} \\
 \midrule
-\textbf{Overall} & All Subjects & 201 & 7.579 [6.82, 8.42] & \textbf{6.914} [6.13, 7.75] & $-$0.665 \\
+\textbf{Overall} & All Subjects & 201 & 7.579 [6.82, 8.42] & \textbf{6.938} [6.18, 7.77] & $-$0.641 \\
 \midrule
 \textbf{Sex} & Female & 110 & 7.369 [6.18, 8.51] & \textbf{6.522} [5.42, 7.65] & $-$0.848 \\
 & Male & 91 & 7.832 [6.73, 8.99] & \textbf{7.442} [6.27, 8.73] & $-$0.390 \\
 \midrule
-\textbf{Cohort Stratum} & Stratum B (Guy's alias) & 32 & 7.366 [5.35, 9.43] & \textbf{5.800} [4.45, 7.22] & $-$1.566 \\
-& Stratum A (Hammersmith) & 50 & 7.960 [6.33, 9.72] & \textbf{8.278} [6.51, 10.21] & +0.318 \\
-& Stratum C (KCL/IoP) & 25 & 6.798 [4.53, 9.35] & \textbf{7.067} [5.39, 8.91] & +0.269 \\
-& Stratum WashU (OASIS-1) & 94 & 7.656 [6.57, 8.77] & \textbf{6.579} [5.36, 7.88] & $-$1.077 \\
+\textbf{Cohort Stratum} & Stratum B & 32 & 7.366 [5.35, 9.43] & \textbf{5.800} [4.45, 7.22] & $-$1.566 \\
+& Stratum A & 50 & 7.960 [6.33, 9.72] & \textbf{8.278} [6.51, 10.21] & +0.318 \\
+& Stratum C & 25 & 6.798 [4.53, 9.35] & \textbf{7.067} [5.39, 8.91] & +0.269 \\
+& Stratum WashU & 94 & 7.656 [6.57, 8.77] & \textbf{6.579} [5.36, 7.88] & $-$1.077 \\
 \midrule
 \textbf{Dataset} & IXI (Normative) & 107 & 7.511 [6.36, 8.70] & \textbf{7.254} [6.18, 8.32] & $-$0.257 \\
 & OASIS-1 (Clinical) & 94 & 7.656 [6.55, 8.78] & \textbf{6.579} [5.45, 7.91] & $-$1.077 \\
@@ -186,7 +186,7 @@ Table~\ref{tab:models} presents the model comparison across development stages a
 
 \begin{table}[t]
 \centering
-\caption{Model comparison across development stages and calibration strategies. Row~1 reflects an initial exploratory development baseline evaluated strictly on IXI test subjects ($N=107$). Rows~2--7 reflect unified models evaluated on the held-out test cohort ($N=201$). Deployable inverse calibration $(\hat{y} - \beta)/\alpha$ uses parameters fitted strictly on training out-of-fold predictions without target-age leakage, whereas residual adjustment is an evaluation-only retrospective diagnostic requiring chronological age.}
+\caption{Model comparison across development stages and calibration strategies. Row~1 reflects an initial exploratory development baseline evaluated strictly on IXI test subjects ($N=107$). Rows~2--7 reflect unified models evaluated on the held-out test cohort ($N=201$). Deployable inverse calibration $(\hat{y} - \beta)/\alpha$ uses parameters fitted strictly on training predictions ($\alpha = 0.9330, \beta = 3.8952$) without target-age leakage, whereas residual adjustment is an evaluation-only retrospective diagnostic requiring chronological age.}
 \label{tab:models}
 \begin{tabularx}{\textwidth}{l l c c c c c}
 \toprule
@@ -194,16 +194,16 @@ Table~\ref{tab:models} presents the model comparison across development stages a
 \midrule
 1 & Small 3D CNN (Dev Baseline, IXI $N=107$) & 15.600 & $-$0.190 & — & 8.4 & $\sim$30 \\
 2 & Image-Only 3D ResNet & 7.579 & 0.781 & +0.491 & 40.8 & 72.6 \\
-3 & Primary 3D ResNet (CNN) & 6.914 & 0.813 & +0.471 & 50.2 & 74.6 \\
+3 & Primary 3D ResNet (CNN) & 6.938 & 0.813 & +0.441 & 47.8 & 75.1 \\
 4 & Standalone GPR (50 PCA dims) & 7.752 & 0.780 & +0.211 & 40.3 & 71.1 \\
-5 & Prespecified CNN+GPR Blend (0.79/0.21) & 6.947 & 0.814 & +0.416 & 48.8 & 73.6 \\
-6 & Deployable Inverse Calibration & 7.158 & 0.801 & +0.262 & 45.8 & 73.1 \\
-7 & Residual Adjustment (Retrospective) & 6.695 & 0.831 & $-$0.000 & 43.8 & 79.1 \\
+5 & Prespecified CNN+GPR Blend (0.79/0.21) & 6.961 & 0.813 & +0.393 & 46.8 & 73.6 \\
+6 & Deployable Inverse Calibration & 7.218 & 0.798 & +0.229 & 44.8 & 73.6 \\
+7 & Residual Adjustment (Retrospective) & 6.756 & 0.827 & $-$0.000 & 45.3 & 78.1 \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-Deployable inverse calibration achieves MAE = 7.158~y and reduces bias to $+0.262$~y without test-time age leakage. The GPR blend (Row~5) performs closely to the CNN (MAE 6.947~y vs. 6.914~y), verifying that non-linear feature blending preserves prediction quality while offering Gaussian process variance bounds.
+Deployable inverse calibration achieves MAE = 7.218~y ($\pm 10$~y accuracy: 73.6\%) and reduces bias to $+0.229$~y without test-time age leakage. Standalone GPR provides subject-level predictive uncertainty bounds (mean $\sigma = 6.37$~y). The GPR blend (Row~5) performs closely to the CNN (MAE 6.961~y vs. 6.938~y), verifying that non-linear feature blending preserves prediction quality while offering Gaussian process uncertainty bounds.
 
 \subsection{Exploratory Clinical Association with CDR and MMSE}
 On the OASIS-1 held-out clinical arm ($N = 94$), estimated BAG exhibits progressive elevation across dementia stages (Table~\ref{tab:clinical}, Fig.~\ref{fig:clinical}):
@@ -249,7 +249,7 @@ Based on the failure modes observed during this audit, we propose a 10-point rep
 \textbf{\#} & \textbf{Reporting Recommendation} & \textbf{Evidence from This Study} & \textbf{Status} \\
 \midrule
 1 & Subgroup Metrics by Biological Sex & Female 6.522~y vs. Male 7.442~y MAE (metadata) & Met \\
-2 & Cohort Strata \& Acquisition Protocol & Detailed in Table~\ref{tab:sites} and Table~\ref{tab:fairness} with scanner details & Met \\
+2 & Cohort Strata \& Acquisition Protocol & Detailed in Table~\ref{tab:sites} and Table~\ref{tab:fairness} across four partition strata & Met \\
 3 & Age-Stratified Error \& Flagging & Reported across decades; $N < 10$ flagged (Fig.~\ref{fig:subgroup_decades}) & Met \\
 4 & Bias Adjustment Transparency & Deployable calibration separated from post-hoc adjustments & Partly met \\
 5 & Unseen Acquisition Generalization & All four strata represented in training cohort & Open \\
@@ -263,7 +263,7 @@ Based on the failure modes observed during this audit, we propose a 10-point rep
 \end{table}
 
 \section{Discussion and Limitations}
-\textbf{The Trade-Off of Metadata Ingestion.} Ingesting demographic and cohort labels provides the regression head with strong prior signals, reducing aggregate MAE by 0.665~y. However, this accuracy boost was accompanied by wider observed gaps across sex (+0.457~y) and acquisition strata (+1.884~y). While overlapping confidence intervals caution against over-interpreting a single run, these findings suggest that tabular feature concatenation in multi-modal architectures warrants careful scrutiny.
+\textbf{The Trade-Off of Metadata Ingestion.} Ingesting demographic and cohort labels provides the regression head with strong prior signals, reducing aggregate MAE by 0.641~y. However, this accuracy boost was accompanied by wider observed gaps across sex (+0.457~y) and acquisition strata (+1.884~y). While overlapping confidence intervals caution against over-interpreting a single run, these findings suggest that tabular feature concatenation in multi-modal architectures warrants careful scrutiny.
 
 \textbf{Limitations.} Our study possesses several limitations:
 \begin{enumerate}
@@ -273,20 +273,17 @@ Based on the failure modes observed during this audit, we propose a 10-point rep
 \end{enumerate}
 
 \section{Conclusion}
-We presented a descriptive fairness audit of brain-age prediction across biological sex, cohort strata, and chronological age. A pure image-only 3D ResNet achieved 7.579~y MAE, while metadata assistance reduced MAE to 6.914~y but was accompanied by larger observed subgroup gaps. Deployable inverse calibration operating without true age achieved 7.158~y MAE. Finally, we introduced an exploratory 10-point reporting checklist to encourage standardized, transparent reporting across e-health neuroimaging benchmarks.
+We presented a descriptive fairness audit of brain-age prediction across biological sex, cohort strata, and chronological age. A pure image-only 3D ResNet achieved 7.579~y MAE, while metadata assistance reduced MAE to 6.938~y but was accompanied by larger observed subgroup gaps. Deployable inverse calibration operating without true age achieved 7.218~y MAE ($\pm 10$~y accuracy: 73.6\%). Finally, we introduced an exploratory 10-point reporting checklist to encourage standardized, transparent reporting across e-health neuroimaging benchmarks.
 
 \subsubsection{Reproducibility Statement.}
 Source code, dataset crosswalks, model weights, and scripts are publicly available at: \url{https://github.com/VISHALS566/brain-age-fairness-audit}.
 
 \begin{thebibliography}{10}
 \bibitem{beheshti2019bias}
-Beheshti, I., Nugent, S., Potvin, O., Duchesne, S.: Bias-adjustment in neuroimaging-based brain age frameworks: A comparative study. NeuroImage 202, 116082 (2019)
-
-\bibitem{bell2021fairness}
-Bell, A., et al.: Fairness and bias in algorithmic medical imaging: Subgroup disparities in deep neural networks. Lancet Digital Health 3(11), e721--e729 (2021)
+Beheshti, I., Nugent, S., Potvin, O., Duchesne, S.: Bias-adjustment in neuroimaging-based brain age frameworks: A robust scheme. NeuroImage: Clinical 24, 102063 (2019)
 
 \bibitem{chen2021transmorph}
-Chen, J., et al.: TransMorph: Transformer for unsupervised medical image registration. Med. Image Anal. 82, 102615 (2022)
+Chen, J., Frey, E.C., He, Y., Segars, W.P., Li, Y., Du, Y.: TransMorph: Transformer for unsupervised medical image registration. Med. Image Anal. 82, 102615 (2022)
 
 \bibitem{cole2017predicting}
 Cole, J.H., et al.: Predicting brain age with deep learning from raw imaging data results in a reliable and heritable biomarker. NeuroImage 163, 115--124 (2017)
@@ -297,14 +294,20 @@ Cole, J.H., et al.: Brain age, clinical cognitive status, and functional outcome
 \bibitem{de2020bias}
 de Lange, A.M.G., Cole, J.H.: Commentary: Correction procedures in brain-age estimation. NeuroImage: Clinical 26, 102229 (2020)
 
+\bibitem{fortin2018harmonization}
+Fortin, J.P., et al.: Harmonization of cortical thickness measurements across scanners and sites. NeuroImage 167, 104--120 (2018)
+
 \bibitem{franke2010cross}
-Franke, K., et al.: Estimating the age of healthy subjects from T1-weighted MRI scans using kernel methods. NeuroImage 50(3), 1046--1053 (2010)
+Franke, K., Ziegler, G., Kl{\"o}ppel, S., Gaser, C.: Estimating the age of healthy subjects from T1-weighted MRI scans using kernel methods: Exploring the influence of various parameters. NeuroImage 50(3), 883--892 (2010)
 
 \bibitem{ixi_dataset}
 IXI Dataset: Information eXtraction from Images. Biomedical Image Analysis Group, Imperial College London. \url{https://brain-development.org/ixi-dataset/} (2021)
 
 \bibitem{marcus2007open}
 Marcus, D.S., et al.: Open Access Series of Imaging Studies (OASIS): Cross-sectional MRI data in young, middle aged, nondemented, and demented older adults. J. Cogn. Neurosci. 19(9), 1498--1507 (2007)
+
+\bibitem{mehrabi2021survey}
+Mehrabi, N., Morstatter, F., Saxena, N., Lerman, K., Galstyan, A.: A survey on bias and fairness in machine learning. ACM Comput. Surv. 54(6), 1--35 (2021)
 
 \bibitem{peng2021accurate}
 Peng, H., et al.: Accurate brain age prediction with lightweight deep neural networks. Med. Image Anal. 68, 101871 (2021)

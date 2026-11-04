@@ -37,3 +37,4 @@ src/run_phase1_fixes.py
 Thumbs.db
 scratch/
 !data/IXI/ixi_subject_crosswalk.csv
+!data/IXI/README.md

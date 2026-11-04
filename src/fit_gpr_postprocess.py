@@ -187,12 +187,19 @@ def run_pipeline():
     kernel_final = ConstantKernel(constant_value=np.var(y_tr)) * RBF(length_scale=np.sqrt(50)) + WhiteKernel(noise_level=1.0)
     gpr_final = GaussianProcessRegressor(kernel=kernel_final, alpha=1e-2, n_restarts_optimizer=0, random_state=42)
     gpr_final.fit(X_tr_s, y_tr)
-    gpr_te = gpr_final.predict(X_te_s)
+    gpr_te, gpr_std = gpr_final.predict(X_te_s, return_std=True)
+    print(f"      GPR predictive uncertainty on test set: mean std = {np.mean(gpr_std):.2f} y (range: [{np.min(gpr_std):.2f}, {np.max(gpr_std):.2f}] y)")
 
     # 4. Canonical Post-Processing & Blending Evaluations (Test Set N = 201)
     print("\n[4/5] Evaluating canonical stages on held-out test cohort (N = 201)...")
-    # Model 1: Primary 3D ResNet (CNN)
-    pred_cnn = cnn_te
+    # Model 1: Primary 3D ResNet (CNN) from canonical predictions
+    canonical_pred_csv = BASE_DIR / "outputs" / "unified" / "unified_predictions.csv"
+    if canonical_pred_csv.exists():
+        df_canon = pd.read_csv(canonical_pred_csv)
+        pred_cnn = df_canon["prediction"].values
+        print(f"      Loaded canonical test predictions from {canonical_pred_csv.name} (N = {len(pred_cnn)})")
+    else:
+        pred_cnn = cnn_te
 
     # Model 2: Standalone GPR (50 PCA components)
     pred_gpr = gpr_te
@@ -202,12 +209,16 @@ def run_pipeline():
     w_prespecified = 0.79
     pred_blend = w_prespecified * pred_cnn + (1 - w_prespecified) * pred_gpr
 
-    # Model 4: Deployable Inverse Calibration (using training slope alpha, beta)
-    pred_deployable = (pred_cnn - beta_mean) / alpha_mean
+    # Model 4: Deployable Inverse Calibration (fitted strictly on training predictions: y_pred = alpha * y_true + beta)
+    lr_cal = LinearRegression().fit(y_tr.reshape(-1, 1), cnn_tr)
+    alpha_cal = float(lr_cal.coef_[0])
+    beta_cal = float(lr_cal.intercept_)
+    print(f"      Linear calibration on training partition: alpha = {alpha_cal:.4f}, beta = {beta_cal:.4f}")
+    pred_deployable = (pred_cnn - beta_cal) / alpha_cal
 
     # Model 5: Retrospective Residual Adjustment (uses true age as diagnostic upper bound)
     lr_res = LinearRegression().fit(y_te.reshape(-1, 1), pred_cnn - y_te)
-    a_res, b_res = lr_res.coef_[0], lr_res.intercept_
+    a_res, b_res = float(lr_res.coef_[0]), float(lr_res.intercept_)
     pred_residual = pred_cnn - (a_res * y_te + b_res)
 
     results = [

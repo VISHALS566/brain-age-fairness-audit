@@ -20,7 +20,7 @@
 
 The brain-age gap ($\text{BAG} = \hat{y} - y$), the difference between MRI-predicted and chronological age, is widely used as a biomarker for neurodegeneration, yet its calibration across demographic and cohort subgroups is rarely reported. We present a descriptive subgroup audit of 3D residual brain-age networks trained on 937 T1-weighted scans pooled from OASIS-1 (one cohort, $N=403$) and the preprocessed IXI benchmark (three sequential partition strata, $N=534$).
 
-We compare an **image-only network** (MAE 7.579 y, 95% CI [6.82, 8.42]) with a **metadata-assisted network** that also receives sex, dataset, and cohort stratum indicators (MAE 6.914 y, 95% CI [6.13, 7.75]) on a held-out test cohort ($N = 201$). Metadata lowered global error by ~0.66 y but widened the sex gap (male minus female MAE) from +0.463 y to +0.920 y and the Stratum A minus Stratum B gap from +0.594 y to +2.478 y (historical aliases Hammersmith vs. Guy's); bootstrap intervals overlap, indicating a single-run descriptive observation rather than an established general effect.
+We compare an **image-only network** (MAE 7.579 y, 95% CI [6.82, 8.42]) with a **metadata-assisted network** that also receives sex, dataset, and cohort stratum indicators (MAE 6.938 y, 95% CI [6.18, 7.77]) on a held-out test cohort ($N = 201$). Metadata lowered global error by 0.641 y but was associated with larger observed subgroup gaps in this run: the sex gap (male minus female MAE) widened from +0.463 y to +0.920 y and the Stratum A minus Stratum B gap widened from +0.594 y to +2.478 y; bootstrap intervals overlap, indicating a single-run descriptive observation rather than an established general effect.
 
 A deployable inverse age calibration (no test-time use of age) is reported separately from an evaluation-only retrospective residual adjustment. On OASIS-1, mean BAG rose from −1.29 y (CDR 0) to +2.88 y (CDR 0.5) and +4.16 y (CDR 1) and correlated with MMSE (Pearson $r = −0.272, p = 0.025$). We propose a 10-point reporting checklist derived from the audit, apply it to this study, and treat it as exploratory.
 
@@ -28,40 +28,40 @@ A deployable inverse age calibration (no test-time use of age) is reported separ
 
 ## 📊 Canonical Experimental Results
 
-### 1. Subgroup Performance & Disparity Audit (Table 2 / Table 3)
+### 1. Subgroup Performance & Disparity Audit (Table 2)
 
 Evaluated on the pooled held-out test cohort ($N=201$ subjects, 1,000 bootstrap iterations; IXI $N=107$, OASIS-1 $N=94$):
 
 | Attribute | Subgroup Value | $N$ | Image-Only ResNet [95% CI] | Metadata-Assisted ResNet [95% CI] | Difference ($\Delta$) |
 |:---|:---|:---:|:---:|:---:|:---:|
-| **Overall** | All Subjects | 201 | 7.579 y [6.82, 8.42] | **6.914 y** [6.13, 7.75] | −0.665 y |
+| **Overall** | All Subjects | 201 | 7.579 y [6.82, 8.42] | **6.938 y** [6.18, 7.77] | −0.641 y |
 | **Sex** | Female | 110 | 7.369 y [6.18, 8.51] | **6.522 y** [5.42, 7.65] | −0.848 y |
 | **Sex** | Male | 91 | 7.832 y [6.73, 8.99] | **7.442 y** [6.27, 8.73] | −0.390 y |
-| **Cohort Stratum** | Stratum B (Guy's alias) | 32 | 7.366 y [5.35, 9.43] | **5.800 y** [4.45, 7.22] | −1.566 y |
-| **Cohort Stratum** | Stratum A (Hammersmith alias) | 50 | 7.960 y [6.33, 9.72] | **8.278 y** [6.51, 10.21] | +0.318 y |
-| **Cohort Stratum** | Stratum C (KCL/IoP alias) | 25 | 6.798 y [4.53, 9.35] | **7.067 y** [5.39, 8.91] | +0.269 y |
-| **Cohort Stratum** | Stratum WashU (OASIS-1) | 94 | 7.656 y [6.57, 8.77] | **6.579 y** [5.36, 7.88] | −1.077 y |
+| **Cohort Stratum** | Stratum B | 32 | 7.366 y [5.35, 9.43] | **5.800 y** [4.45, 7.22] | −1.566 y |
+| **Cohort Stratum** | Stratum A | 50 | 7.960 y [6.33, 9.72] | **8.278 y** [6.51, 10.21] | +0.318 y |
+| **Cohort Stratum** | Stratum C | 25 | 6.798 y [4.53, 9.35] | **7.067 y** [5.39, 8.91] | +0.269 y |
+| **Cohort Stratum** | Stratum WashU | 94 | 7.656 y [6.57, 8.77] | **6.579 y** [5.36, 7.88] | −1.077 y |
 | **Dataset** | IXI (Normative) | 107 | 7.511 y [6.36, 8.70] | **7.254 y** [6.18, 8.32] | −0.257 y |
 | **Dataset** | OASIS-1 (Clinical) | 94 | 7.656 y [6.55, 8.78] | **6.579 y** [5.45, 7.91] | −1.077 y |
 | **Subgroup Gap** | **Male − Female Gap** | — | **+0.463 y** | **+0.920 y** | *Widened* |
 | **Subgroup Gap** | **Stratum A − Stratum B Gap** | — | **+0.594 y** | **+2.478 y** | *Widened* |
 
-### 2. Post-Processing & Calibration Strategies (Table 4)
+### 2. Post-Processing & Calibration Strategies (Table 3)
 
 Source: `outputs/phase1_fixes/postprocessing_comparison.csv` (generated via live `fit_gpr_postprocess.py` with 5-fold cross-validation and fold-specific PCA/scaling):
 
 | Stage / Method | Inference Deployment | Target-Age Leakage | Test MAE | Test $R^2$ | Bias | Within $\pm 5$ y | Within $\pm 10$ y |
 |:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
 | **Small 3D CNN (Dev Baseline)** | Yes | None | 15.600 y | −0.190 | — | 8.4% | ~30% |
-| **Primary 3D ResNet (CNN)** | Yes | None | 6.914 y | 0.813 | +0.471 y | 50.2% | 74.6% |
+| **Primary 3D ResNet (CNN)** | Yes | None | 6.938 y | 0.813 | +0.441 y | 47.8% | 75.1% |
 | **Standalone GPR (50 PCA dims)** | Yes | None | 7.752 y | 0.780 | +0.211 y | 40.3% | 71.1% |
-| **Prespecified CNN+GPR Blend (0.79/0.21)** | Yes | None | 6.947 y | 0.814 | +0.416 y | 48.8% | 73.6% |
-| **Deployable Inverse Calibration** ($\frac{\hat{y} - 3.90}{0.933}$) | **Yes** | **None (Zero)** | **7.158 y** | **0.801** | **+0.262 y** | **45.8%** | **73.1%** |
-| **Retrospective Residual Adjustment** ($\hat{y} - (a y + b)$) | No (Eval only) | Uses test $y$ | 6.695 y | 0.831 | −0.000 y | 43.8% | 79.1% |
+| **Prespecified CNN+GPR Blend (0.79/0.21)** | Yes | None | 6.961 y | 0.813 | +0.393 y | 46.8% | 73.6% |
+| **Deployable Inverse Calibration** ($\frac{\hat{y} - 3.895}{0.933}$) | **Yes** | **None (Zero)** | **7.218 y** | **0.798** | **+0.229 y** | **44.8%** | **73.6%** |
+| **Retrospective Residual Adjustment** ($\hat{y} - (a y + b)$) | No (Eval only) | Uses test $y$ | 6.756 y | 0.827 | −0.000 y | 45.3% | 78.1% |
 
 *Note: Row 1 reflects the exploratory single-epoch development baseline evaluated strictly on IXI test subjects ($N=107$). Rows 2–6 reflect unified models evaluated on the held-out test cohort ($N=201$).*
 
-### 3. Biological & Clinical Validity on OASIS-1 (Table 5)
+### 3. Biological & Clinical Validity on OASIS-1
 
 - **CDR 0.0 (Healthy Controls, $N=47$):** Mean BAG = **$-1.29\text{ y}$**, Median = **$-0.12\text{ y}$**, MAE = 7.18 y
 - **CDR 0.5 (Very Mild Impairment, $N=32$):** Mean BAG = **$+2.88\text{ y}$**, Median = **$+3.64\text{ y}$**, MAE = 6.02 y
@@ -85,7 +85,8 @@ Source: `outputs/phase1_fixes/postprocessing_comparison.csv` (generated via live
 ├── splncs04.bst              # Official Springer LNCS BibTeX style
 ├── data/
 │   └── IXI/
-│       └── ixi_subject_crosswalk.csv # File-index to demographic subject crosswalk
+│       ├── README.md         # IXI volume accounting and provenance documentation
+│       └── ixi_subject_crosswalk.csv # Benchmark file-index to demographic subject crosswalk
 ├── src/                      # Source code
 │   ├── dataset_unified.py    # Multi-site loader & OASIS split generator
 │   ├── model_v2.py           # 3D ResNet (Image-Only and Metadata-Assisted)
@@ -99,7 +100,7 @@ Source: `outputs/phase1_fixes/postprocessing_comparison.csv` (generated via live
 │   └── evaluate_fairness.py  # Stratified subgroup metrics
 └── outputs/                  # Numerical predictions and publication figures
     ├── comparison/           # Side-by-side CSV audit metrics
-    ├── figures/              # Publication figures (Fig 1 to Fig 9, 300 DPI)
+    ├── figures/              # Publication figures (Fig 1 to Fig 7, 300 DPI)
     ├── image_only/           # Image-only predictions, fairness report, checkpoint
     ├── phase1_fixes/         # Postprocessing comparison, bootstrap CIs, CDR/MMSE stats
     └── unified/              # Metadata model predictions, history, checkpoint, cache
