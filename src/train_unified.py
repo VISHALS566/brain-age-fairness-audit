@@ -75,7 +75,9 @@ from model_v2 import (
 BASE_DIR          = Path(__file__).resolve().parent.parent   # D:\brainage
 IXI_DATA_DIR      = BASE_DIR / "data" / "IXI" / "IXI_data"
 IXI_XLS           = BASE_DIR / "data" / "IXI" / "IXI.xls"
-OASIS_MANIFEST    = Path(r"E:\code\outputs\brain_age_v2\manifest.csv")
+OASIS_MANIFEST    = Path("data/OASIS-1/manifest.csv")
+if not OASIS_MANIFEST.exists() and (OUT_DIR / "unified_manifest.csv").exists():
+    OASIS_MANIFEST = OUT_DIR / "unified_manifest.csv"
 OUT_DIR           = BASE_DIR / "outputs" / "unified"
 UNIFIED_MANIFEST  = OUT_DIR / "unified_manifest.csv"
 
@@ -482,6 +484,6 @@ if __name__ == "__main__":
     parser.add_argument("--batch_size", type=int,   default=4,    help="Batch size (4 fits RTX 4050 6GB)")
     parser.add_argument("--lr",         type=float, default=1e-3, help="Peak learning rate")
     parser.add_argument("--warmup",     type=int,   default=5,    help="Warmup epochs")
-    parser.add_argument("--workers",    type=int,   default=2,    help="DataLoader workers")
+    parser.add_argument("--workers",    type=int,   default=0,    help="DataLoader workers (0 for safe memory on Windows)")
     args = parser.parse_args()
     train(args)

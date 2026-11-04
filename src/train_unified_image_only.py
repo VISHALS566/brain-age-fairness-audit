@@ -169,15 +169,11 @@ def train_image_only(args):
     best_val_mae = float("inf")
     history = []
 
-    if getattr(args, "resume", True) and ckpt_path.exists():
-        print(f"Found checkpoint at {ckpt_path}. Resuming from epoch 15...")
-        model.load_state_dict(torch.load(ckpt_path, map_location=device))
-        ema.load_state_dict(torch.load(ckpt_path, map_location=device))
-        start_epoch = 15
-        best_val_mae = 10.89
-        for _ in range(start_epoch):
-            scheduler.step()
-        print(f"Resumed at epoch {start_epoch+1}/50, lr={optimizer.param_groups[0]['lr']:.2e}, best_val_mae={best_val_mae:.2f}y")
+    if getattr(args, "resume", False) and ckpt_path.exists():
+        print(f"Resuming training from checkpoint {ckpt_path}...")
+        ckpt = torch.load(ckpt_path, map_location=device, weights_only=True)
+        model.load_state_dict(ckpt)
+        ema.load_state_dict(ckpt)
 
     total_batches = math.ceil(len(train_ds) / args.batch_size)
     print(f"Training for epochs {start_epoch+1} to {args.epochs} | batch={args.batch_size} | lr={args.lr}")

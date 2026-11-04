@@ -101,6 +101,9 @@ def build_ixi_manifest(ixi_data_dir: str, ixi_xls: str) -> pd.DataFrame:
             ambiguous.append(sid)
     meta = demo[~demo["Subject_ID"].isin(ambiguous)].drop_duplicates("Subject_ID").copy()
 
+    # Subject-ID partition convention (001-314 Hammersmith, 315-428 Guy's, 429+ KCL)
+    # As documented in Section 3.1, these labels represent preprocessed cohort partition strata
+    # rather than isolated scanner hardware physics.
     def _site(sid: int) -> str:
         if sid <= 314:  return "Hammersmith"
         if sid <= 428:  return "Guys"
