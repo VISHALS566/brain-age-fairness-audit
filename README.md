@@ -1,7 +1,8 @@
 # Fairness Audit of Brain-Age Prediction Across Sex, Acquisition Site and Age
 
-[![Conference](https://img.shields.io/badge/Conference-CARES--2027-blue.svg)](https://cares2027.org)
-[![Format](https://img.shields.io/badge/Template-Springer%20LNCS-green.svg)](https://www.springer.com/gp/computer-science/lncs)
+[![Conference](https://img.shields.io/badge/Conference-CARES%202027-blue.svg)](https://cares2027.org)
+[![Proceedings](https://img.shields.io/badge/Proceedings-Springer%20LNEE-green.svg)](https://www.springer.com/series/7818)
+[![Track](https://img.shields.io/badge/Special%20Session-01%3A%20Multimedia%20E--Health-orange.svg)](https://cares2027.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.6.0%2BCUDA-red.svg)](https://pytorch.org/)
@@ -10,7 +11,8 @@
 > **Fairness Audit of Brain-Age Prediction Across Sex, Acquisition Site and Age: Subgroup Calibration Results and a Proposed Reporting Checklist**  
 > *Vishal S and Pranav Eashwaran G*  
 > School of Computer Science and Engineering, Vellore Institute of Technology, Chennai, India  
-> `vishal.s2024a@vitstudent.ac.in`, `pranaveashwaran.g2024@vitstudent.ac.in`
+> `vishal.s2024a@vitstudent.ac.in`, `pranaveashwaran.g2024@vitstudent.ac.in`  
+> *Accepted for submission to CARES 2027: International Conference on Computing and Artificial Intelligence for E-health Systems (Springer LNEE)*
 
 ---
 
@@ -73,10 +75,11 @@ Evaluated on the held-out test partition ($N=201$ subjects, 1,000 bootstrap iter
 ├── README.md                 # Project documentation and reproduction instructions
 ├── requirements.txt          # Python dependencies
 ├── src/                      # Source code
-│   ├── dataset_unified.py    # Multi-site loader & 80x80x96 area downsampling
+│   ├── dataset_unified.py    # Multi-site loader & OASIS split generator
 │   ├── model_v2.py           # 3D ResNet (Image-Only and Metadata-Assisted)
 │   ├── train_unified.py      # Metadata-assisted model training
 │   ├── train_unified_image_only.py # Image-only ablation model training
+│   ├── fit_gpr_postprocess.py # PCA + GPR blending & calibration regression fitting
 │   ├── evaluate_calibration_and_bootstrap.py # Bootstrap CIs & deployable calibration
 │   ├── compare_models.py     # Disparity audit comparing image-only vs metadata
 │   ├── plot_image_vs_metadata.py # Publication figure generation
@@ -102,24 +105,22 @@ cd brain-age-fairness-audit
 pip install -r requirements.txt
 ```
 
-### 2. Run Subgroup Bootstrap CIs & Deployable Calibration
+### 2. Run GPR Blending & Deployable Calibration (Section 3.5)
+
+```bash
+python src/fit_gpr_postprocess.py
+```
+
+### 3. Run Subgroup Bootstrap CIs & Clinical Evaluation (Phase 1)
 
 ```bash
 python src/evaluate_calibration_and_bootstrap.py
 ```
-Outputs saved to `outputs/phase1_fixes/`:
-- `table3_subgroup_fairness_with_bootstrap_ci.csv`
-- `calibration_comparison.csv`
-- `table_clinical_cdr_validation.csv`
-- `clinical_validation_summary.json`
 
-### 3. Evaluate Image-Only vs. Metadata Disparity
+### 4. Evaluate Image-Only vs. Metadata Disparity (Phase 2)
 
 ```bash
-# Compare test predictions across subgroups
 python src/compare_models.py
-
-# Generate Figure 4 (Image-Only vs. Metadata Comparison Bar Plot)
 python src/plot_image_vs_metadata.py
 ```
 
@@ -139,8 +140,8 @@ If you use this code, the checklist, or findings from this study in your researc
 @inproceedings{vishal2027fairness,
   title={Fairness Audit of Brain-Age Prediction Across Sex, Acquisition Site and Age: Subgroup Calibration Results and a Proposed Reporting Checklist},
   author={Vishal, S. and Eashwaran G, Pranav},
-  booktitle={CARES 2027: International Workshop on Clinical Applications of AI and Responsible Evaluation in Healthcare},
-  series={Lecture Notes in Computer Science (LNCS)},
+  booktitle={CARES 2027: International Conference on Computing and Artificial Intelligence for E-health Systems},
+  series={Lecture Notes in Electrical Engineering (LNEE)},
   publisher={Springer},
   year={2027}
 }
