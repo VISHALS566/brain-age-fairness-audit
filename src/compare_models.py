@@ -23,8 +23,9 @@ img_df = pd.read_csv(IMG_PRED_PATH)
 meta_df = pd.read_csv(META_PRED_PATH)
 
 # Standardize site naming
-img_df["site"] = img_df["site"].replace({"Guys": "Guy's"})
-meta_df["site"] = meta_df["site"].replace({"Guys": "Guy's"})
+stratum_map = {"Guys": "Stratum B", "Guy's": "Stratum B", "Hammersmith": "Stratum A", "KCL": "Stratum C", "WashU": "Stratum WashU"}
+img_df["site"] = img_df["site"].replace(stratum_map)
+meta_df["site"] = meta_df["site"].replace(stratum_map)
 
 img_df["age_decade"] = (img_df["age"] // 10 * 10).astype(int).astype(str) + "s"
 meta_df["age_decade"] = (meta_df["age"] // 10 * 10).astype(int).astype(str) + "s"
@@ -80,7 +81,7 @@ for s in ["Female", "Male"]:
     add_row("Sex", s, img_df[img_df["sex"] == s], meta_df[meta_df["sex"] == s])
 
 # Site
-for site in ["Guy's", "Hammersmith", "KCL", "WashU"]:
+for site in ["Stratum B", "Stratum A", "Stratum C", "Stratum WashU"]:
     add_row("Site", site, img_df[img_df["site"] == site], meta_df[meta_df["site"] == site])
 
 # Dataset
@@ -114,9 +115,9 @@ print(f"  Image-Only:        Delta = {i_sex_gap:+.3f} years")
 print(f"  Metadata-Assisted: Delta = {m_sex_gap:+.3f} years")
 
 # Compare site disparities:
-i_site_gap = img_df[img_df['site'] == 'Hammersmith']['abs_error'].mean() - img_df[img_df['site'] == "Guy's"]['abs_error'].mean()
-m_site_gap = meta_df[meta_df['site'] == 'Hammersmith']['abs_error'].mean() - meta_df[meta_df['site'] == "Guy's"]['abs_error'].mean()
-print(f"Site Disparity Gap (Hammersmith MAE - Guy's MAE):")
+i_site_gap = img_df[img_df['site'] == 'Stratum A']['abs_error'].mean() - img_df[img_df['site'] == "Stratum B"]['abs_error'].mean()
+m_site_gap = meta_df[meta_df['site'] == 'Stratum A']['abs_error'].mean() - meta_df[meta_df['site'] == "Stratum B"]['abs_error'].mean()
+print(f"Site Disparity Gap (Stratum A MAE - Stratum B MAE):")
 print(f"  Image-Only:        Delta = {i_site_gap:+.3f} years")
 print(f"  Metadata-Assisted: Delta = {m_site_gap:+.3f} years")
 
